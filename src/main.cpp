@@ -142,7 +142,7 @@ void runMessurementFull(unsigned int seconds)
   digitalWrite(valve, HIGH);
 
   writeToDisplay("Pulses");
-  writeToDisplay(String(pulses), 1);
+  writeToDisplay(String(pulses), 1); 
   pulses = 0;
 }
 
