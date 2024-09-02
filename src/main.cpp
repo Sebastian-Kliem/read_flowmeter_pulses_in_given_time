@@ -12,7 +12,6 @@ const int buttonPin3Second = 9;
 const int buttonPin10Second = 10;
 const int buttonPin100Second = 11;
 
-
 // define variables
 int pulses = 0;
 volatile bool isRunning = false;
@@ -112,34 +111,53 @@ void setup()
   writeToDisplay("Ready");
 }
 
+
 /**
  * @brief Runs a full measurement with the valve open for a specified number of seconds.
  *
  * This function measures the flow rate by counting the pulses from a flow meter.
- * The valve is opened for the specified number of seconds, then closed.
- * The total number of pulses is then displayed on the LCD.
+ * The valve is opened for the specified number of seconds, then closed, and the total number of pulses
+ * is displayed on the LCD.
  *
  * @param seconds The number of seconds the valve should be open.
  *
  * @return void
  */
-void runMessurementFull(unsigned int seconds)
+void runMessurementFull(unsigned long seconds)
 {
   pulses = 0;
   writeToDisplay("Running ");
   writeToDisplay(String(seconds) + " seconds", 1);
 
+  Serial.println("Start with " + String(seconds) + "s");
+
   unsigned long startTime = millis();
-  unsigned long elapsedTime = 0;
+
+  unsigned long measuermentTimeMiliSeconds = seconds * 1000;
+  Serial.println("Measuermenttmemiliseconds: " + String(measuermentTimeMiliSeconds));
+
+  unsigned long stoptime = startTime + (measuermentTimeMiliSeconds);
 
   digitalWrite(valve, LOW);
 
-  while (elapsedTime < seconds * 1000)
+  Serial.println("Starttime: " + String(startTime));
+  Serial.println("Stoptime: " + String(stoptime));
+
+  unsigned long previousMillis = 0;
+
+  while (millis() <= stoptime)
   {
-    elapsedTime = millis() - startTime;
+    if (millis() / 1000 == previousMillis) {
+      previousMillis = millis() / 1000;
+      Serial.println("Time: " + String(previousMillis) + "s");
+    }
   }
 
   digitalWrite(valve, HIGH);
+
+  Serial.println("----------------------------------------------------");
+  Serial.println("Stoptime: " + String(millis()));
+  Serial.println("Pulses: " + String(pulses));
 
   writeToDisplay("Pulses");
   writeToDisplay(String(pulses), 1);
@@ -147,13 +165,13 @@ void runMessurementFull(unsigned int seconds)
 }
 
 
+
 /**
- * @brief Runs a measurement with the valve open for a specified number of seconds,
- *        then closes the valve for 2 seconds, and repeats this process 10 times.
+ * @brief Runs a split measurement with the valve open for a specified number of seconds, repeated 10 times.
  *
  * This function measures the flow rate by counting the pulses from a flow meter.
- * The valve is opened for the specified number of seconds, then closed for 2 seconds.
- * This process is repeated 10 times. The total number of pulses is then displayed on the LCD.
+ * The valve is opened for the specified number of seconds, then closed, and this process is repeated 10 times.
+ * The total number of pulses is then displayed on the LCD.
  *
  * @param seconds The number of seconds the valve should be open for each cycle.
  *
@@ -187,6 +205,10 @@ void runMessurementSplitted(unsigned int seconds)
       elapsedTime = millis() - startTime;
     }
   }
+
+  Serial.println("----------------------------------------------------");
+  Serial.println("Stoptime: " + String(millis()));
+  Serial.println("Pulses: " + String(pulses));
 
   writeToDisplay("Pulses");
   writeToDisplay(String(pulses), 1);
