@@ -111,7 +111,6 @@ void setup()
   writeToDisplay("Ready");
 }
 
-
 /**
  * @brief Runs a full measurement with the valve open for a specified number of seconds.
  *
@@ -129,25 +128,20 @@ void runMessurementFull(unsigned long seconds)
   writeToDisplay("Running ");
   writeToDisplay(String(seconds) + " seconds", 1);
 
-  Serial.println("Start with " + String(seconds) + "s");
+  Serial.println("Measurement starts with " + String(seconds) + "s");
 
   unsigned long startTime = millis();
-
   unsigned long measuermentTimeMiliSeconds = seconds * 1000;
-  Serial.println("Measuermenttmemiliseconds: " + String(measuermentTimeMiliSeconds));
-
   unsigned long stoptime = startTime + (measuermentTimeMiliSeconds);
+  unsigned long previousMillis = 0;
 
   digitalWrite(valve, LOW);
 
-  Serial.println("Starttime: " + String(startTime));
-  Serial.println("Stoptime: " + String(stoptime));
-
-  unsigned long previousMillis = 0;
-
   while (millis() <= stoptime)
   {
-    if (millis() / 1000 == previousMillis) {
+    // print the seconds of the runtime
+    if (millis() / 1000 == previousMillis)
+    {
       previousMillis = millis() / 1000;
       Serial.println("Time: " + String(previousMillis) + "s");
     }
@@ -155,16 +149,11 @@ void runMessurementFull(unsigned long seconds)
 
   digitalWrite(valve, HIGH);
 
-  Serial.println("----------------------------------------------------");
-  Serial.println("Stoptime: " + String(millis()));
   Serial.println("Pulses: " + String(pulses));
 
   writeToDisplay("Pulses");
   writeToDisplay(String(pulses), 1);
-  pulses = 0;
 }
-
-
 
 /**
  * @brief Runs a split measurement with the valve open for a specified number of seconds, repeated 10 times.
@@ -182,38 +171,47 @@ void runMessurementSplitted(unsigned int seconds)
   pulses = 0;
   writeToDisplay("Running " + String(seconds) + " seconds");
 
+  Serial.println("Splitted measurement starts with 10x " + String(seconds) + "s");
+
   for (int i = 0; i < 10; i++)
   {
     unsigned long startTime = millis();
-    unsigned long elapsedTime = 0;
+    unsigned int cycle = i + 1;
 
-    writeToDisplay("Cycle: " + String(i + 1), 1);
+    writeToDisplay("Cycle: " + String(cycle), 1);
     digitalWrite(valve, LOW);
 
-    while (elapsedTime < seconds * 1000)
+    unsigned long measuermentTimeMiliSeconds = seconds * 1000;
+    unsigned long stoptime = startTime + (measuermentTimeMiliSeconds);
+    unsigned long previousMillis = 0;
+
+    while (millis() <= stoptime)
     {
-      elapsedTime = millis() - startTime;
+      // print the seconds of the runtime
+      if (millis() / 1000 == previousMillis)
+      {
+        previousMillis = millis() / 1000;
+        Serial.println("Time: " + String(previousMillis) + "s");
+      }
     }
 
     digitalWrite(valve, HIGH);
 
     startTime = millis();
-    elapsedTime = 0;
+    unsigned long waitTime = 0;
 
-    while (elapsedTime < 2000)
+    // pause for 2 seconds after each cycle
+    while (waitTime < 2000)
     {
-      elapsedTime = millis() - startTime;
+      waitTime = millis() - startTime;
     }
   }
 
-  Serial.println("----------------------------------------------------");
-  Serial.println("Stoptime: " + String(millis()));
   Serial.println("Pulses: " + String(pulses));
 
   writeToDisplay("Pulses");
   writeToDisplay(String(pulses), 1);
 }
-
 
 void loop()
 {
@@ -223,7 +221,6 @@ void loop()
     {
       Serial.println("Button 1s pressed");
       runMessurementSplitted(1);
-      // runMessurementFull(1 );
     }
     lastDebounceTime = millis();
   }
@@ -234,7 +231,6 @@ void loop()
     {
       Serial.println("Button 3s pressed");
       runMessurementSplitted(3);
-      // runMessurementFull(3);
     }
     lastDebounceTime = millis();
   }
